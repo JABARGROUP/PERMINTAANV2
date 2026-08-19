@@ -4504,9 +4504,9 @@ function getAppDirectLink(noSurat) {
       return `${originPath}?noSurat=${encodeURIComponent(rawNoSurat)}`;
     }
     
-    return `https://jabargroup.github.io/PermintaanToko/index.html?noSurat=${encodeURIComponent(rawNoSurat)}`;
+    return `https://jabargroup.github.io/PERMINTAANV2/index.html?noSurat=${encodeURIComponent(rawNoSurat)}`;
   } catch (e) {
-    return `https://jabargroup.github.io/PermintaanToko/index.html?noSurat=${encodeURIComponent(noSurat)}`;
+    return `https://jabargroup.github.io/PERMINTAANV2/index.html?noSurat=${encodeURIComponent(noSurat)}`;
   }
 }
 window.getAppDirectLink = getAppDirectLink;
@@ -16475,47 +16475,98 @@ if (typeof initFirebaseDB === 'function') {
   try { initFirebaseDB(); } catch(e) {}
 }
 
-async function hapusPenyimpananLokalAkun() {
-  showConfirm('BERSIHKAN SEMUA PENYIMPANAN LOKAL & LOGOUT DARI PERANGKAT INI?\n\n(Tanda Tangan & Setelan Tema Anda akan tetap aman).', function() {
-    var _asyncTask = async function() {
-      showLoading('MEMBERSIHKAN PENYIMPANAN LOKAL...');
-      try {
-        if (typeof clearLocalStorageKeepThemeAndTTD === 'function') {
-          await clearLocalStorageKeepThemeAndTTD();
-        }
+async 
 
-        // Hapus sesi login aktif
-        currentUser = null;
-        appStorage.removeItem(SESSION_KEY);
-        try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
 
-        // Tutup modal-modal aktif
-        if (typeof tutupAkun === 'function') tutupAkun(true);
-        if (typeof tutupNotificationModal === 'function') tutupNotificationModal();
-        const popupBantuan = document.getElementById('popupBantuan');
-        if (popupBantuan) popupBantuan.classList.remove('show');
-        const bottomMenu = document.getElementById('bottomMenu');
-        if (bottomMenu) bottomMenu.style.display = 'none';
-        const helpBtn = document.getElementById('helpButton');
-        if (helpBtn) helpBtn.style.display = 'none';
-
-        // Pindah otomatis ke halaman Login
-        if (typeof pindahHalaman === 'function') {
-          pindahHalaman('loginPage');
-        }
-        if (typeof loadRememberedCredentials === 'function') {
-          loadRememberedCredentials();
-        }
-        if (typeof updateNotifBellCounter === 'function') updateNotifBellCounter();
-
-        hideLoading();
-        showNotif('PENYIMPANAN LOKAL BERHASIL DIBERSIHKAN! SILAKAN LOGIN KEMBALI.', 'success');
-      } catch (err) {
-        hideLoading();
-        showNotif('GAGAL MEMBERSIHKAN: ' + (err.message || err), 'warning');
+function hapusPenyimpananLokalAkun() {
+  const modal = document.getElementById('popupSecurityPinHapusLokal');
+  const inputPin = document.getElementById('inputPinHapusLokal');
+  const errEl = document.getElementById('pinHapusLokalError');
+  if (errEl) errEl.style.display = 'none';
+  if (inputPin) {
+    inputPin.value = '';
+    inputPin.style.borderColor = 'var(--border-color)';
+  }
+  if (modal) {
+    modal.style.setProperty('display', 'flex', 'important');
+    modal.classList.add('show');
+    setTimeout(() => {
+      if (inputPin) {
+        inputPin.focus();
       }
-    };
-    _asyncTask();
-  });
+    }, 150);
+  }
 }
 window.hapusPenyimpananLokalAkun = hapusPenyimpananLokalAkun;
+
+function tutupModalPinHapusLokal() {
+  const modal = document.getElementById('popupSecurityPinHapusLokal');
+  if (modal) {
+    modal.style.setProperty('display', 'none', 'important');
+    modal.classList.remove('show');
+  }
+}
+window.tutupModalPinHapusLokal = tutupModalPinHapusLokal;
+
+async function verifikasiDanEksekusiHapusLokal() {
+  const inputPin = document.getElementById('inputPinHapusLokal');
+  const errEl = document.getElementById('pinHapusLokalError');
+  const pinVal = inputPin ? inputPin.value.trim() : '';
+
+  if (pinVal !== '111111') {
+    if (errEl) {
+      errEl.textContent = 'PASSWORD KEAMANAN SALAH! (HARUS 6 DIGIT: 111111)';
+      errEl.style.display = 'block';
+    }
+    if (inputPin) {
+      inputPin.style.borderColor = '#ef4444';
+      inputPin.value = '';
+      inputPin.focus();
+    }
+    if (typeof showNotif === 'function') {
+      showNotif('PASSWORD KEAMANAN SALAH!', 'error');
+    }
+    return;
+  }
+
+  tutupModalPinHapusLokal();
+
+  showLoading('MEMBERSIHKAN PENYIMPANAN LOKAL...');
+  try {
+    if (typeof clearLocalStorageKeepThemeAndTTD === 'function') {
+      await clearLocalStorageKeepThemeAndTTD();
+    }
+
+    // Hapus sesi login aktif
+    currentUser = null;
+    appStorage.removeItem(SESSION_KEY);
+    try { localStorage.removeItem(SESSION_KEY); } catch(e) {}
+
+    // Tutup modal-modal aktif
+    if (typeof tutupAkun === 'function') tutupAkun(true);
+    if (typeof tutupNotificationModal === 'function') tutupNotificationModal();
+    const popupBantuan = document.getElementById('popupBantuan');
+    if (popupBantuan) popupBantuan.classList.remove('show');
+    const bottomMenu = document.getElementById('bottomMenu');
+    if (bottomMenu) bottomMenu.style.display = 'none';
+    const helpBtn = document.getElementById('helpButton');
+    if (helpBtn) helpBtn.style.display = 'none';
+
+    // Pindah otomatis ke halaman Login
+    if (typeof pindahHalaman === 'function') {
+      pindahHalaman('loginPage');
+    }
+    if (typeof loadRememberedCredentials === 'function') {
+      loadRememberedCredentials();
+    }
+    if (typeof updateNotifBellCounter === 'function') updateNotifBellCounter();
+
+    hideLoading();
+    showNotif('PENYIMPANAN LOKAL BERHASIL DIBERSIHKAN! ANDA TELAH LOGOUT.', 'success');
+  } catch (err) {
+    hideLoading();
+    console.error('[BERSIHKAN LOKAL ERROR]:', err);
+    showNotif('GAGAL MEMBERSIHKAN PENYIMPANAN LOKAL!', 'error');
+  }
+}
+window.verifikasiDanEksekusiHapusLokal = verifikasiDanEksekusiHapusLokal;
