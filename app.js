@@ -5796,6 +5796,10 @@ function pindahHalaman(pageId, pushHistory = true) {
   }
 
   if (pageId === 'loginPage' || (typeof currentUser === 'undefined' || !currentUser)) {
+    document.body.style.setProperty('overflow', 'hidden', 'important');
+    document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+    const appEl = document.getElementById('app');
+    if (appEl) appEl.style.setProperty('overflow', 'hidden', 'important');
     if (typeof closeAllPopups === 'function') closeAllPopups();
     const bottomMenu = document.getElementById('bottomMenu');
     if (bottomMenu) {
@@ -5814,6 +5818,10 @@ function pindahHalaman(pageId, pushHistory = true) {
       loadRememberedCredentials();
     }
   } else {
+    document.body.style.removeProperty('overflow');
+    document.documentElement.style.removeProperty('overflow');
+    const appEl = document.getElementById('app');
+    if (appEl) appEl.style.removeProperty('overflow');
     const bottomMenu = document.getElementById('bottomMenu');
     if (bottomMenu) {
       bottomMenu.classList.remove('login-hidden');
